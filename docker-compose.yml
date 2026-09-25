@@ -1,0 +1,10 @@
+services:
+  copiloto:
+    build: ./backend
+    ports:
+      - "8000:8000"
+    env_file:
+      - ./backend/.env
+    volumes:
+      - ./backend/app:/app/app   # útil en desarrollo: ves cambios sin rebuild
+    restart: unless-stopped
