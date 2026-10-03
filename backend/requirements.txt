@@ -4,3 +4,5 @@ networkx==3.5
 python-dotenv==1.0.1
 pydantic==2.11.5
 httpx==0.28.1
+azure-identity==1.19.0
+azure-monitor-ingestion==1.0.4

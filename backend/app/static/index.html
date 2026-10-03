@@ -1,66 +1,241 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Copiloto-SOC En Construcción</title>
-    <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Copiloto SOC</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --ink: #0a0e14;
+    --surface: #121821;
+    --surface-raised: #1a222e;
+    --line: #242e3b;
+    --text: #e7ecf2;
+    --text-dim: #7c8798;
+    --amber: #e3a23c;
+    --amber-dim: #3a2f1c;
+    --sev-high: #e5484d;
+    --sev-medium: #e3a23c;
+    --sev-low: #5b6472;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    font-family: "Inter", -apple-system, sans-serif;
+    background: var(--ink);
+    color: var(--text);
+    padding: 32px 40px 60px;
+    max-width: 880px;
+    margin: 0 auto;
+  }
 
-        body {
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-            background-color: #0d1117;
-            color: #c9d1d9;
-            height: 100vh;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            text-align: center;
-            padding: 20px;
-        }
+  .marca { display: flex; align-items: baseline; gap: 10px; margin-bottom: 4px; }
+  .marca .punto { width: 10px; height: 10px; border-radius: 50%; background: var(--amber);
+    box-shadow: 0 0 10px var(--amber); flex-shrink: 0; }
+  h1 { font-size: 1.3rem; font-weight: 700; letter-spacing: -0.01em; }
+  .subtitulo { color: var(--text-dim); font-size: 0.88rem; margin: 2px 0 22px 20px; }
 
-        .container {
-            max-width: 500px;
-        }
+  .triage {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 1px;
+    background: var(--line);
+    border: 1px solid var(--line);
+    border-radius: 10px;
+    overflow: hidden;
+    margin-bottom: 20px;
+  }
+  .triage div {
+    background: var(--surface);
+    padding: 14px 16px;
+  }
+  .triage .num { font-size: 1.5rem; font-weight: 800; display: block; line-height: 1.1; }
+  .triage .lbl { font-size: 0.74rem; color: var(--text-dim); }
+  .triage .num.high { color: var(--sev-high); }
+  .triage .num.medium { color: var(--sev-medium); }
 
-        h1 {
-            font-size: 1.5rem;
-            font-weight: 600;
-            color: #f0f6fc;
-            margin-bottom: 12px;
-            letter-spacing: -0.02em;
-        }
+  .barra {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 18px;
+  }
+  .barra input {
+    flex: 1;
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    padding: 9px 13px;
+    color: var(--text);
+    font-size: 0.88rem;
+    font-family: inherit;
+  }
+  .barra input::placeholder { color: var(--text-dim); }
+  .barra input:focus { outline: 2px solid var(--amber); outline-offset: -1px; }
+  .toggle {
+    display: flex;
+    align-items: center;
+    gap: 7px;
+    font-size: 0.82rem;
+    color: var(--text-dim);
+    cursor: pointer;
+    white-space: nowrap;
+    user-select: none;
+  }
+  .toggle input { accent-color: var(--amber); width: 15px; height: 15px; cursor: pointer; }
 
-        p {
-            font-size: 0.95rem;
-            color: #8b949e;
-            line-height: 1.5;
-        }
+  .incidente {
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-radius: 10px;
+    margin-bottom: 8px;
+  }
+  .incidente-header {
+    padding: 13px 16px;
+    cursor: pointer;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 14px;
+  }
+  .incidente-header:hover { background: var(--surface-raised); }
+  .izq { display: flex; align-items: center; gap: 12px; min-width: 0; }
+  .id { font-weight: 600; font-size: 0.92rem; flex-shrink: 0; }
+  .cadena { display: flex; align-items: center; gap: 2px; flex-shrink: 0; }
+  .cadena .nodo { width: 6px; height: 6px; border-radius: 50%; }
+  .cadena .arista { width: 8px; height: 1px; }
+  .resumen-msg {
+    color: var(--text-dim);
+    font-size: 0.8rem;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+  .flecha { color: var(--text-dim); font-size: 0.75rem; transition: transform 0.15s; flex-shrink: 0; }
+  .incidente.abierto .flecha { transform: rotate(90deg); }
 
-        .badge {
-            display: inline-block;
-            margin-bottom: 16px;
-            padding: 4px 10px;
-            font-size: 0.75rem;
-            font-weight: 600;
-            text-transform: uppercase;
-            letter-spacing: 0.05em;
-            color: #d29922;
-            background-color: rgba(210, 153, 34, 0.1);
-            border: 1px solid rgba(210, 153, 34, 0.2);
-            border-radius: 20px;
-        }
-    </style>
+  .alertas { display: none; padding: 2px 16px 14px; }
+  .incidente.abierto .alertas { display: block; }
+  .alerta {
+    font-size: 0.82rem;
+    padding: 9px 12px;
+    margin-top: 6px;
+    background: var(--ink);
+    border-left: 3px solid var(--sev-low);
+    border-radius: 0 6px 6px 0;
+  }
+  .alerta.high { border-left-color: var(--sev-high); }
+  .alerta.medium { border-left-color: var(--sev-medium); }
+  .alerta .meta { color: var(--text-dim); font-size: 0.74rem; margin-bottom: 3px; }
+  .alerta .msg { color: var(--text); line-height: 1.4; }
+
+  #estado { text-align: center; color: var(--text-dim); padding: 50px; font-size: 0.88rem; }
+</style>
 </head>
 <body>
-    <div class="container">
-        <div class="badge">Mantenimiento</div>
-        <h1>Copiloto-SOC En Construcción</h1>
-        <p>Estamos trabajando en esta plataforma. Vuelve a intentarlo más tarde.</p>
-    </div>
+  <div class="marca">
+    <div class="punto"></div>
+    <h1>Copiloto SOC</h1>
+  </div>
+  <p class="subtitulo">correlación determinista de alertas en incidentes</p>
+
+  <div class="triage" id="triage">
+    <div><span class="num" id="t-total">—</span><span class="lbl">incidentes totales</span></div>
+    <div><span class="num" id="t-correlacionados">—</span><span class="lbl">correlacionados</span></div>
+    <div><span class="num high" id="t-high">—</span><span class="lbl">severidad alta</span></div>
+    <div><span class="num medium" id="t-medium">—</span><span class="lbl">severidad media</span></div>
+  </div>
+
+  <div class="barra">
+    <input id="buscar" type="text" placeholder="Buscar por usuario, host, IP o ID de alerta..." oninput="render()">
+    <label class="toggle">
+      <input type="checkbox" id="soloMulti" checked onchange="render()">
+      solo correlacionados
+    </label>
+  </div>
+
+  <div id="estado">Cargando incidentes...</div>
+  <div id="lista"></div>
+
+  <script>
+    let DATA = null;
+
+    function colorSev(s) {
+      return s === "high" ? "var(--sev-high)" : s === "medium" ? "var(--sev-medium)" : "var(--sev-low)";
+    }
+
+    function cadenaHtml(n, sev) {
+      const color = colorSev(sev);
+      const max = Math.min(n, 6);
+      let html = "";
+      for (let i = 0; i < max; i++) {
+        html += `<div class="nodo" style="background:${color}"></div>`;
+        if (i < max - 1) html += `<div class="arista" style="background:${color}"></div>`;
+      }
+      if (n > max) html += `<span style="color:${color};font-size:0.72rem;margin-left:3px">+${n - max}</span>`;
+      return html;
+    }
+
+    async function cargar() {
+      const res = await fetch('/api/incidents');
+      DATA = await res.json();
+      document.getElementById('estado').style.display = 'none';
+
+      const high = DATA.incidentes.filter(i => i.severidad_max === 'high').length;
+      const medium = DATA.incidentes.filter(i => i.severidad_max === 'medium').length;
+      const multi = DATA.incidentes.filter(i => i.num_alertas > 1).length;
+      document.getElementById('t-total').textContent = DATA.total_incidentes;
+      document.getElementById('t-correlacionados').textContent = multi;
+      document.getElementById('t-high').textContent = high;
+      document.getElementById('t-medium').textContent = medium;
+
+      render();
+    }
+
+    function render() {
+      const q = document.getElementById('buscar').value.toLowerCase();
+      const soloMulti = document.getElementById('soloMulti').checked;
+      const lista = document.getElementById('lista');
+      lista.innerHTML = '';
+
+      const filtrados = DATA.incidentes.filter(inc => {
+        if (soloMulti && inc.num_alertas <= 1) return false;
+        if (!q) return true;
+        return inc.alertas.some(a => a.message.toLowerCase().includes(q) || a.alert_id.toLowerCase().includes(q));
+      });
+
+      if (filtrados.length === 0) {
+        lista.innerHTML = `<div id="estado" style="display:block">Sin resultados para ese filtro.</div>`;
+        return;
+      }
+
+      filtrados.forEach((inc, idx) => {
+        const div = document.createElement('div');
+        div.className = 'incidente';
+        div.innerHTML = `
+          <div class="incidente-header" onclick="this.parentElement.classList.toggle('abierto')">
+            <div class="izq">
+              <span class="id">${inc.incident_id}</span>
+              <div class="cadena">${cadenaHtml(inc.num_alertas, inc.severidad_max)}</div>
+              <span class="resumen-msg">${inc.alertas[0].message}</span>
+            </div>
+            <span class="flecha">▸</span>
+          </div>
+          <div class="alertas">
+            ${inc.alertas.map(a => `
+              <div class="alerta ${a.severity}">
+                <div class="meta">${a.alert_id} · ${a.timestamp} · ${a.rule_name || ''}</div>
+                <div class="msg">${a.message}</div>
+              </div>
+            `).join('')}
+          </div>
+        `;
+        lista.appendChild(div);
+      });
+    }
+
+    cargar();
+  </script>
 </body>
 </html>
